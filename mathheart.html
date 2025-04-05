@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Math heart</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #770081;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="heartCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set canvas size
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        // Graph parameters
+        const xRange = 1.7;
+        const scale = Math.min(canvas.width, canvas.height) * 0.22;
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2 + scale * 0.2;
+        
+        // Animation timing (38 seconds total)
+        const totalDuration = 38000; // 38 seconds in milliseconds
+        const maxK = 100;
+        let startTime = null;
+
+        function drawHeart(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const elapsed = timestamp - startTime;
+            const progress = (elapsed % totalDuration) / totalDuration;
+            
+            // Calculate k (0→100→0)
+            let k = progress < 0.5 ? 
+                progress * 2 * maxK : 
+                (1 - (progress - 0.5) * 2) * maxK;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Original glow effect setup
+            ctx.shadowColor = '#ff0066';
+            ctx.shadowBlur = 20;
+            
+            // Heart colors with enhanced gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, 'rgba(255, 105, 180, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(255, 20, 147, 0.9)');
+            gradient.addColorStop(1, 'rgba(219, 112, 147, 0.8)');
+            
+            ctx.beginPath();
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 3;
+            
+            // Draw top part of heart
+            let firstPoint = true;
+            for (let x = -xRange; x <= xRange; x += 0.002) {
+                const term1 = Math.pow(Math.abs(x), 2/3);
+                const rootTerm = Math.sqrt(Math.max(0, 3 - x*x));
+                const term2 = 0.9 * Math.sin(k * x) * rootTerm;
+                
+                const canvasX = centerX + x * scale;
+                const canvasY = centerY - (term1 + term2) * scale;
+                
+                if (firstPoint) {
+                    ctx.moveTo(canvasX, canvasY);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(canvasX, canvasY);
+                }
+            }
+            
+            // Draw bottom part of heart
+            for (let x = xRange; x >= -xRange; x -= 0.002) {
+                const term1 = Math.pow(Math.abs(x), 2/3);
+                const rootTerm = Math.sqrt(Math.max(0, 3 - x*x));
+                const term2 = 0.9 * Math.sin(k * x) * rootTerm;
+                
+                const canvasX = centerX + x * scale;
+                const canvasY = centerY - (term1 - term2) * scale;
+                
+                ctx.lineTo(canvasX, canvasY);
+            }
+            
+            ctx.closePath();
+            
+            // Original glow effect application
+            ctx.fillStyle = 'rgba(255, 0, 102, 0.15)';
+            ctx.fill();
+            
+            // Additional glow layers for more intensity
+            ctx.shadowBlur = 15;
+            ctx.stroke();
+            
+            // Inner glow
+            ctx.shadowBlur = 10;
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.stroke();
+            
+            // Reset shadow
+            ctx.shadowBlur = 0;
+            
+            requestAnimationFrame(drawHeart);
+        }
+        
+        // Start animation
+        requestAnimationFrame(drawHeart);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            scale = Math.min(canvas.width, canvas.height) * 0.22;
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2 + scale * 0.2;
+        });
+    </script>
+    <script>
+        setTimeout(function() {
+            window.location.href = "lastpage.html"; 
+        }, 38000); 
+    </script>
+</body>
+</html>
